@@ -11,6 +11,6 @@
 "lahkun toast","lt",0,0,0,0,
 "lahkun toast 60s","lt-60,lt60",0,"_0",0,"_0",60
 "ekraanid kinni","ek",0,,,,
-"ekraanid kinni vaikus","ekv, laptop suspend",0,,,,
+"ekraanid kinni vaikus","ekv, laptop suspend",0,,0,,
 "laualamp","l",,1,,,
 "öö","ö",0,0,0,1,
