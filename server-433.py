@@ -2,7 +2,9 @@ import os
 from enum import IntEnum, Enum
 from threading import Thread
 
+# noinspection PyBroadException
 try:
+    # noinspection PyUnresolvedReferences
     from rpi_rf import RFDevice
 except RuntimeError:
     RFDevice = None
@@ -14,19 +16,15 @@ from flask import request
 from markupsafe import escape
 import csv
 
-import numbers
-
 from dotenv import load_dotenv
+import urllib.request
+import urllib.parse
+import time
 
 load_dotenv()
 
 class ENV(Enum):
     IFFIT_API_KEY = os.getenv("IFFIT_API_KEY")
-
-
-import urllib.request
-import urllib.parse
-
 
 class SENDER(IntEnum):
     GPIO = 2
@@ -39,6 +37,7 @@ class SENDER(IntEnum):
 app = Flask(__name__)
 
 if RFDevice:
+    # noinspection PyCallingNonCallable
     rfdevice = RFDevice(SENDER.GPIO)
     rfdevice.enable_tx()
     rfdevice.tx_repeat = SENDER.REPEAT
@@ -59,7 +58,6 @@ CODES = (
     (21588, 21589),
 )
 
-import time
 
 
 def get_code(row, state):
@@ -101,13 +99,14 @@ def do_work_sleep(cmds, cb_time):
 
 
 def send_commands(raw_commands):
-    if raw_commands.get("commands", []):
+    if raw_commands.get("commands", None):
         parsed_cmds = parse_commands(raw_commands.get("commands", []))
-        for cmd in parsed_cmds["now"]:
-            do_work(cmd)
 
-    thread_delay = Thread(target=do_work_sleep, kwargs={'cmds': parsed_cmds["later"], "cb_time": raw_commands["delay"]})
-    thread_delay.start()
+        thread_now = Thread(target=do_work_now, kwargs={'cmds': parsed_cmds["now"]})
+        thread_now.start()
+
+        thread_delay = Thread(target=do_work_sleep, kwargs={'cmds': parsed_cmds["later"], "cb_time": raw_commands["delay"]})
+        thread_delay.start()
 
     thread_iffit = Thread(target=do_iffit, kwargs={'cmd': raw_commands["iffit"]})
     thread_iffit.start()
@@ -146,9 +145,13 @@ def do_iffit(cmd):
     if not cmd:
         return
 
-    url = f"https://maker.ifttt.com/trigger/{cmd}/with/key/{ENV.IFFIT_API_KEY}"
+    url = f"https://maker.ifttt.com/trigger/{cmd}/with/key/{ENV.IFFIT_API_KEY.value}"
     f = urllib.request.urlopen(url)
     print(f.read().decode('utf-8'))
+
+def do_work_now(cmds):
+    for cmd in cmds:
+        do_work(cmd)
 
 
 SHORTCUTS = load_csv()
