@@ -1,3 +1,5 @@
+import os
+from enum import IntEnum, Enum
 from threading import Thread
 
 try:
@@ -14,18 +16,32 @@ import csv
 
 import numbers
 
-SENDER_GPIO = 2
-SENDER_REPEAT = 5
-SENDER_PROTOCOL = 1
-SENDER_PULSELENGTH = 350
-SENDER_CODELENGTH = 24
+from dotenv import load_dotenv
+
+load_dotenv()
+
+class ENV(Enum):
+    IFFIT_API_KEY = os.getenv("IFFIT_API_KEY")
+
+
+import urllib.request
+import urllib.parse
+
+
+class SENDER(IntEnum):
+    GPIO = 2
+    REPEAT = 5
+    PROTOCOL = 1
+    PULSELENGTH = 350
+    CODELENGTH = 24
+
 
 app = Flask(__name__)
 
 if RFDevice:
-    rfdevice = RFDevice(SENDER_GPIO)
+    rfdevice = RFDevice(SENDER.GPIO)
     rfdevice.enable_tx()
-    rfdevice.tx_repeat = SENDER_REPEAT
+    rfdevice.tx_repeat = SENDER.REPEAT
 
 # CODES (off, on) it means [row][0] is off.
 
@@ -46,23 +62,6 @@ CODES = (
 import time
 
 
-# SHORTCUTS = {}
-# SHORTCUTS = {
-#     "öö": "1_0|2_0|3_0|4_1",
-#     "lahkun toast": "1_0|2_0|3_0|4_0",
-#     "arvuti": "1_1",
-#     "arvuti pime": "1_1|2_1|4_0",
-#     "arvuti heli": "1_1|3_1",
-#     "arvuti pime heli": "1_1|2_1|3_1|4_0",
-#     "arvuti heli pime": "1_1|2_1|3_1|4_0",
-#     "valge": "2_0|4_0",
-#     "vaikus": "3_0",
-#     "heli": "3_1",
-#     "voodi": "4_1",
-#     "voodi pime": "4_0",
-# }
-
-
 def get_code(row, state):
     return CODES[int(row) - 1][int(state)]
 
@@ -70,7 +69,7 @@ def get_code(row, state):
 def parse_commands(raw_commands):
     result = {
         "now": [],
-        "later": []
+        "later": [],
     }
     commands = raw_commands.split("|")
     for cmd in commands:
@@ -85,8 +84,8 @@ def parse_commands(raw_commands):
 
 def send_cmd(cmd):
     if RFDevice:
-        rfdevice.tx_code(cmd, tx_proto=SENDER_PROTOCOL, tx_pulselength=SENDER_PULSELENGTH,
-                         tx_length=SENDER_CODELENGTH)
+        rfdevice.tx_code(cmd, tx_proto=SENDER.PROTOCOL, tx_pulselength=SENDER.PULSELENGTH,
+                         tx_length=SENDER.CODELENGTH)
 
 
 def do_work(cmd):
@@ -102,12 +101,16 @@ def do_work_sleep(cmds, cb_time):
 
 
 def send_commands(raw_commands):
-    parsed_cmds = parse_commands(raw_commands["commands"])
-    for cmd in parsed_cmds["now"]:
-        do_work(cmd)
+    if raw_commands.get("commands", []):
+        parsed_cmds = parse_commands(raw_commands.get("commands", []))
+        for cmd in parsed_cmds["now"]:
+            do_work(cmd)
 
-    thread = Thread(target=do_work_sleep, kwargs={'cmds': parsed_cmds["later"], "cb_time": raw_commands["delay"]})
-    thread.start()
+    thread_delay = Thread(target=do_work_sleep, kwargs={'cmds': parsed_cmds["later"], "cb_time": raw_commands["delay"]})
+    thread_delay.start()
+
+    thread_iffit = Thread(target=do_iffit, kwargs={'cmd': raw_commands["iffit"]})
+    thread_iffit.start()
 
 
 def load_csv():
@@ -129,7 +132,8 @@ def load_csv():
 
             shortcut_value = {
                 "commands": "|".join(row_shortcut),
-                "delay": delay_value
+                "delay": delay_value,
+                "iffit": row["iffit"]
             }
             shortcuts[row["name"]] = shortcut_value
             for alias in row["alias"].split(","):
@@ -138,13 +142,24 @@ def load_csv():
     return shortcuts
 
 
+def do_iffit(cmd):
+    if not cmd:
+        return
+
+    url = f"https://maker.ifttt.com/trigger/{cmd}/with/key/{ENV.IFFIT_API_KEY}"
+    f = urllib.request.urlopen(url)
+    print(f.read().decode('utf-8'))
+
+
 SHORTCUTS = load_csv()
 
 
 @app.route("/", methods=["GET"])
 def send_433():
     global SHORTCUTS
-    shortcut_name = escape(request.args.get('cmd').replace("_", " ").replace("\"", ""))
+    shortcut_name = None
+    if request.args.get('cmd'):
+        shortcut_name = escape(request.args.get('cmd').replace("_", " ").replace("\"", ""))
     if shortcut_name:
         shortcut_commands = SHORTCUTS.get(shortcut_name)
         if not shortcut_commands:
@@ -154,5 +169,6 @@ def send_433():
                 return f"Käsku ei leitud: {shortcut_name}"
         print(f"Selected shortcut name {shortcut_name} : {shortcut_commands}")
         send_commands(shortcut_commands)
+
         return f"{shortcut_name}"
     return "Hello"
