@@ -2,6 +2,8 @@ import os
 from enum import IntEnum, Enum
 from threading import Thread
 
+import flask
+
 try:
     from rpi_rf import RFDevice
 except RuntimeError:
@@ -9,7 +11,7 @@ except RuntimeError:
 except Exception:
     RFDevice = None
 
-from flask import Flask
+from flask import Flask, render_template
 from flask import request
 from markupsafe import escape
 import csv
@@ -171,4 +173,5 @@ def send_433():
         send_commands(shortcut_commands)
 
         return f"{shortcut_name}"
-    return "Hello"
+    SHORTCUTS = load_csv()
+    return render_template('index.html', shortcuts=SHORTCUTS)

@@ -1,5 +1,5 @@
 name,alias,1,2,3,4,delay_time,iffit
-arvuti,ah,1,,,,,
+arvuti,a,1,,,,,
 arvuti heli,"ah, laptop resume",1,,1,,,
 arvuti pime,ap,1,1,,0,,bedroom_off
 arvuti pime heli,"aph, ahp, arvuti heli pime",1,1,1,0,,bedroom_off
