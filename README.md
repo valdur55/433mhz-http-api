@@ -37,7 +37,7 @@ forward = speakers power on
 Channel 1 is computer monitors
 Channel 2 is computer desk light
 Channel 3 is speakers
-Channel 4 is bad light
+Channel 4 is bed light
 ~~~~
 
 
