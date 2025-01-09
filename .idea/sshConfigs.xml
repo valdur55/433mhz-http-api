@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SshConfigs">
+    <configs>
+      <sshConfig authType="PASSWORD" connectionConfig="{&quot;serverAliveInterval&quot;:300}" host="vpi4.local" id="e740696f-e3d9-4a65-bccd-9a11e269bf53" port="22" customName="vpi4.local" nameFormat="CUSTOM" useOpenSSHConfig="true">
+        <option name="customName" value="vpi4.local" />
+      </sshConfig>
+      <sshConfig authType="OPEN_SSH" host="nuti.local" id="18275051-fb76-4a98-aca3-0ae4e8921bc3" port="22" nameFormat="DESCRIPTIVE" username="pi" useOpenSSHConfig="true" />
+    </configs>
+  </component>
+</project>

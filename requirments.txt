@@ -1,0 +1,7 @@
+bottle
+bottle_errorsrest
+bottle_tools
+rpi-rf
+RPi.GPIO
+python-dotenv
+markupsafe

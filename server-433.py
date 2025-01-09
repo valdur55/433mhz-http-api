@@ -10,8 +10,7 @@ except RuntimeError:
 except Exception:
     RFDevice = None
 
-from flask import Flask, render_template
-from flask import request
+from bottle import Bottle, template # or route
 from markupsafe import escape
 import csv
 
@@ -22,18 +21,18 @@ import time
 
 load_dotenv()
 
+
 class ENV(Enum):
     IFFIT_API_KEY = os.getenv("IFFIT_API_KEY")
 
+
 class SENDER(IntEnum):
-    GPIO = 2
+    GPIO = 17
     REPEAT = 5
     PROTOCOL = 1
     PULSELENGTH = 350
     CODELENGTH = 24
 
-
-app = Flask(__name__)
 
 if RFDevice:
     # noinspection PyCallingNonCallable
@@ -56,7 +55,6 @@ CODES = (
     (70740, 70741),
     (21588, 21589),
 )
-
 
 
 def get_code(row, state):
@@ -104,7 +102,8 @@ def send_commands(raw_commands):
         thread_now = Thread(target=do_work_now, kwargs={'cmds': parsed_cmds["now"]})
         thread_now.start()
 
-        thread_delay = Thread(target=do_work_sleep, kwargs={'cmds': parsed_cmds["later"], "cb_time": raw_commands["delay"]})
+        thread_delay = Thread(target=do_work_sleep,
+                              kwargs={'cmds': parsed_cmds["later"], "cb_time": raw_commands["delay"]})
         thread_delay.start()
 
     thread_iffit = Thread(target=do_iffit, kwargs={'cmd': raw_commands["iffit"]})
@@ -113,7 +112,7 @@ def send_commands(raw_commands):
 
 def load_csv():
     shortcuts = {}
-    columns = "1,4,3,2".split(",")
+    columns = "3,1,4,2".split(",")
     with open('shortcuts.csv', newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
@@ -155,13 +154,18 @@ def do_work_now(cmds):
 
 SHORTCUTS = load_csv()
 
+from bottle_tools.plugins import ReqResp
 
-@app.route("/", methods=["GET"])
-def send_433():
+app = Bottle()
+app.install(ReqResp())
+
+
+@app.get('/')
+def send_433(request, response):
     global SHORTCUTS
     shortcut_name = None
-    if request.args.get('cmd'):
-        shortcut_name = escape(request.args.get('cmd').replace("_", " ").replace("\"", ""))
+    if request.query.cmd:
+        shortcut_name = escape(request.query.cmd.replace("_", " ").replace("\"", ""))
     if shortcut_name:
         shortcut_commands = SHORTCUTS.get(shortcut_name)
         if not shortcut_commands:
@@ -174,4 +178,8 @@ def send_433():
 
         return f"{shortcut_name}"
     SHORTCUTS = load_csv()
-    return render_template('index.html', shortcuts=SHORTCUTS)
+    return template('index', shortcuts=SHORTCUTS)
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5433, debug=True, reloader=True)

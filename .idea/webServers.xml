@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="c67b3948-a75e-45d4-abdf-ff5103d07e93" name="nuti.local" url="http://nuti.local:5433/">
+        <fileTransfer rootFolder="/home/pi/arendus/server-433" accessType="SFTP" host="nuti.local" port="22" sshConfigId="18275051-fb76-4a98-aca3-0ae4e8921bc3" sshConfig="pi@nuti.local:22 agent" authAgent="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+      <webServer id="311524f4-6666-430e-a22a-2b2d1b47d96f" name="vpi4.local2" url="http://vpi4.local:5433/">
+        <fileTransfer rootFolder="/home/pi/arendus/server-433" accessType="SFTP" host="vpi4.local" port="22" sshConfigId="e740696f-e3d9-4a65-bccd-9a11e269bf53" sshConfig="vpi4.local">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

@@ -6,9 +6,9 @@
 <form id="sendCmd">
     <label>
         <select class="js-example-basic-single" name="cmd" id="cmd">
-            {% for item in shortcuts %}
+            % for item in shortcuts:
             <option value="{{item}}">{{item}}</option>
-            {% endfor %}
+            % end
         </select>
     </label>
     <button type="submit">Send</button>
