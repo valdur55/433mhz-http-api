@@ -118,11 +118,12 @@ def send_commands(raw_commands):
     if raw_commands.get("commands", None):
         parsed_cmds = parse_commands(raw_commands.get("commands", []))
 
+        thread_now = Thread(target=do_work_now, kwargs={'cmds': parsed_cmds["now"]})
+        thread_now.start()
+
         thread_delay = Thread(target=do_work_sleep,
                               kwargs={'cmds': parsed_cmds["later"], "cb_time": raw_commands["delay"]})
         thread_delay.start()
-
-        do_work_now(cmds=parsed_cmds["now"])
 
     # thread_iffit = Thread(target=do_iffit, kwargs={'cmd': raw_commands["iffit"]})
     # thread_iffit.start()
