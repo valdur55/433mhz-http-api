@@ -5,3 +5,4 @@ rpi-rf
 RPi.GPIO
 python-dotenv
 markupsafe
+tinytuya

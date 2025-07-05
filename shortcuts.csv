@@ -1,18 +1,18 @@
-name,alias,1,2,3,4,delay_time,iffit
-arvuti,a,1,,,,,
-arvuti heli,"ah, laptop resume",1,,1,,,
-arvuti pime,ap,1,1,,0,,bedroom_off
-arvuti pime heli,"aph, ahp, arvuti heli pime",1,1,1,0,,bedroom_off
-heli,h,,,1,,,
-valge,v,,0,,0,,bedroom_off
-vaikus,m,,,0,,,
-voodi,v,,,,1,,
-voodi kinni,vk,,,,0,,
-lahkun toast,lt,0,0,0,0,,bedroom_off
-lahkun toast 60s,"lt-60,lt60",0,_0,0,_0,60,bedroom_off
-ekraanid kinni,ek,0,,,,,
-ekraanid kinni vaikus,"ekv, laptop suspend",0,,0,,,
-laualamp,l,,1,,,,
-öö,ö,0,0,0,1,,bedroom_off
-laelamp,ll,,,,,,bedroom_on
-laelamp kinni,llk,,,,,,bedroom_off
+name,alias,1,2,3,4,delay_time,iffit,tuya
+arvuti,a,1,,,,,,
+arvuti heli,"ah, laptop resume",1,,1,,,,
+arvuti pime,ap,1,1,,0,,bedroom_off,laelamp_off
+arvuti pime heli,"aph, ahp, arvuti heli pime",1,1,1,0,,bedroom_off,laelamp_off
+heli,h,,,1,,,,
+valge,v,,0,,0,,bedroom_off,laelamp_off
+vaikus,m,,,0,,,,
+voodi,v,,,,1,,,
+voodi kinni,vk,,,,0,,,
+lahkun toast,lt,0,0,0,0,,bedroom_off,laelamp_off
+lahkun toast 60s,"lt-60,lt60",0,_0,0,_0,60,bedroom_off,laelamp_off
+ekraanid kinni,ek,0,,,,,,
+ekraanid kinni vaikus,"ekv, laptop suspend",0,,0,,,,
+laualamp,l,,1,,,,,
+öö,ö,0,0,0,1,,bedroom_off,laelamp_off
+laelamp,ll,,,,,,,laelamp_on
+laelamp kinni,llk,,,,,,,laelamp_off

@@ -17,13 +17,32 @@ import csv
 from dotenv import load_dotenv
 import urllib.request
 import urllib.parse
-import time
+
+import tinytuya
 
 load_dotenv()
 
 
+import time
+
 class ENV(Enum):
     IFFIT_API_KEY = os.getenv("IFFIT_API_KEY")
+    TUYA_LAELAMP_DEVICE_ID=os.getenv("TUYA_LAELAMP_DEVICE_ID")
+    TUYA_LAELAMP_LOCAL_KEY=os.getenv("TUYA_LAELAMP_LOCAL_KEY")
+    TUYA_LAELAMP_IP=os.getenv("TUYA_LAELAMP_IP")
+    TUYA_LAELAMP_VERSION=os.getenv("TUYA_LAELAMP_VERSION")
+
+tuyaLaeLamp =  tinytuya.BulbDevice(
+    ENV.TUYA_LAELAMP_DEVICE_ID.value,
+    ENV.TUYA_LAELAMP_IP.value,
+    ENV.TUYA_LAELAMP_LOCAL_KEY.value,
+    version=ENV.TUYA_LAELAMP_VERSION.value
+)
+
+tuyaDevices = {
+    "laelamp": tuyaLaeLamp,
+}
+
 
 
 class SENDER(IntEnum):
@@ -105,8 +124,11 @@ def send_commands(raw_commands):
 
         do_work_now(cmds=parsed_cmds["now"])
 
-    thread_iffit = Thread(target=do_iffit, kwargs={'cmd': raw_commands["iffit"]})
-    thread_iffit.start()
+    # thread_iffit = Thread(target=do_iffit, kwargs={'cmd': raw_commands["iffit"]})
+    # thread_iffit.start()
+
+    thread_tuya = Thread(target=do_tuya, kwargs={'cmd': raw_commands["tuya"]})
+    thread_tuya.start()
 
 
 def load_csv():
@@ -129,7 +151,8 @@ def load_csv():
             shortcut_value = {
                 "commands": "|".join(row_shortcut),
                 "delay": delay_value,
-                "iffit": row["iffit"]
+                # "iffit": row["iffit"],
+                "tuya": row["tuya"],
             }
             shortcuts[row["name"]] = shortcut_value
             for alias in row["alias"].split(","):
@@ -145,6 +168,26 @@ def do_iffit(cmd):
     url = f"https://maker.ifttt.com/trigger/{cmd}/with/key/{ENV.IFFIT_API_KEY.value}"
     f = urllib.request.urlopen(url)
     print(f.read().decode('utf-8'))
+
+
+def do_tuya(cmd):
+    if not cmd:
+        return
+
+    cmd_device = cmd.split("_")[0]  # Assuming cmd is in the format "device_command"
+    command = cmd.split("_")[1]  # Example command: "on" or "off"
+
+    device = tuyaDevices.get(cmd_device)
+    if device:
+        # Example command: "on" or "off"
+        if command == "on":
+            device.turn_on()
+        elif command == "off":
+            device.turn_off()
+        else:
+            print(f"Unknown command for Tuya device ({cmd_device}) cmd: {cmd}")
+    else:
+        print(f"Tuya device not found: {cmd_device}")
 
 def do_work_now(cmds):
     for cmd in cmds:
@@ -171,7 +214,7 @@ def send_433(request, response):
             SHORTCUTS = load_csv()
             shortcut_commands = SHORTCUTS.get(shortcut_name)
             if not shortcut_commands:
-                return f"Käsku ei leitud: {shortcut_name}"
+                return f"Command not found: {shortcut_name}"
         print(f"Selected shortcut name {shortcut_name} : {shortcut_commands}")
         send_commands(shortcut_commands)
 
