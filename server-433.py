@@ -26,6 +26,7 @@ load_dotenv()
 import time
 
 class ENV(Enum):
+    RFDEVICE_GPIO = os.getenv("RFDEVICE_GPIO")
     IFFIT_API_KEY = os.getenv("IFFIT_API_KEY")
     TUYA_LAELAMP_DEVICE_ID=os.getenv("TUYA_LAELAMP_DEVICE_ID")
     TUYA_LAELAMP_LOCAL_KEY=os.getenv("TUYA_LAELAMP_LOCAL_KEY")
@@ -46,7 +47,7 @@ tuyaDevices = {
 
 
 class SENDER(IntEnum):
-    GPIO = 17
+    GPIO = int(ENV.RFDEVICE_GPIO.value)
     REPEAT = 5
     PROTOCOL = 1
     PULSELENGTH = 350
@@ -88,7 +89,6 @@ def parse_commands(raw_commands):
     commands = raw_commands.split("|")
     for cmd in commands:
         command = cmd.split("_")
-        code = 0
         if len(command) > 2:
             result["later"].append(get_code(command[0], command[2]))
         else:
