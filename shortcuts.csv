@@ -16,3 +16,4 @@ laualamp,l,,1,,,,,
 öö,ö,0,0,0,1,,bedroom_off,laelamp_off
 laelamp,ll,,,,,,,laelamp_on
 laelamp kinni,llk,,,,,,,laelamp_off
+pime,p,,1,,0,,bedroom_off,laelamp_off
