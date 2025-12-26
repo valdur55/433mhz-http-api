@@ -18,7 +18,7 @@ sun = Sun(LATITUDE, LONGITUDE)
 sun_rise = sun.get_sunrise_time().time()
 sun_set = sun.get_sunset_time().time()
 
-now = datetime.datetime.now(sun_rise.tzinfo).time()
+now = datetime.datetime.now(tz.UTC).time()
 
 def send_command(command):
     try:
