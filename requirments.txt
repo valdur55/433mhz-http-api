@@ -6,3 +6,4 @@ RPi.GPIO
 python-dotenv
 markupsafe
 tinytuya
+suntime
