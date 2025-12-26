@@ -115,6 +115,9 @@ def do_work_sleep(cmds, cb_time):
 
 
 def send_commands(raw_commands):
+    thread_now = None
+    thread_delay = None
+
     if raw_commands.get("commands", None):
         parsed_cmds = parse_commands(raw_commands.get("commands", []))
 
@@ -128,8 +131,14 @@ def send_commands(raw_commands):
     # thread_iffit = Thread(target=do_iffit, kwargs={'cmd': raw_commands["iffit"]})
     # thread_iffit.start()
 
+    if thread_now:
+        thread_now.join()
+
     thread_tuya = Thread(target=do_tuya, kwargs={'cmd': raw_commands["tuya"]})
     thread_tuya.start()
+
+    if thread_delay:
+        thread_delay.join()
 
 
 def load_csv():
