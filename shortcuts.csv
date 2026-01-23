@@ -13,6 +13,7 @@ lahkun toast 60s,"lt-60,lt60",0,_0,0,_0,60,bedroom_off,laelamp_off
 ekraanid kinni,ek,0,,,,,,
 ekraanid kinni vaikus,"ekv, laptop suspend",0,,0,,,,
 laualamp,l,,1,,,,,
+laualamp kinni,lk,,0,,,,,
 öö,ö,0,0,0,1,,bedroom_off,laelamp_off
 laelamp,ll,,,,,,,laelamp_on
 laelamp kinni,llk,,,,,,,laelamp_off
