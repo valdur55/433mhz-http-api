@@ -191,11 +191,15 @@ def do_tuya(cmd):
     if device:
         # Example command: "on" or "off"
         if command == "on":
-            device.turn_on()
+            tuya_response = device.turn_on()
         elif command == "off":
-            device.turn_off()
+            tuya_response = device.turn_off()
         else:
             print(f"Unknown command for Tuya device ({cmd_device}) cmd: {cmd}")
+            return
+
+        if tuya_response.get("Error"):
+            print(f"Tuya command {cmd} responded with error: {tuya_response}")
     else:
         print(f"Tuya device not found: {cmd_device}")
 
