@@ -1,6 +1,18 @@
 import os
+import signal
 from enum import IntEnum, Enum
 from threading import Thread
+
+from bottle import Bottle, template # or route
+from markupsafe import escape
+import csv
+
+from dotenv import load_dotenv
+import urllib.request
+import urllib.parse
+import time
+
+import tinytuya
 
 try:
     # noinspection PyUnresolvedReferences
@@ -10,20 +22,8 @@ except RuntimeError:
 except Exception:
     RFDevice = None
 
-from bottle import Bottle, template # or route
-from markupsafe import escape
-import csv
-
-from dotenv import load_dotenv
-import urllib.request
-import urllib.parse
-
-import tinytuya
-
 load_dotenv()
 
-
-import time
 
 class ENV(Enum):
     RFDEVICE_GPIO = os.getenv("RFDEVICE_GPIO")
@@ -33,19 +33,6 @@ class ENV(Enum):
     TUYA_LAELAMP_IP=os.getenv("TUYA_LAELAMP_IP")
     TUYA_LAELAMP_VERSION=os.getenv("TUYA_LAELAMP_VERSION")
 
-tuyaLaeLamp =  tinytuya.BulbDevice(
-    ENV.TUYA_LAELAMP_DEVICE_ID.value,
-    ENV.TUYA_LAELAMP_IP.value,
-    ENV.TUYA_LAELAMP_LOCAL_KEY.value,
-    version=ENV.TUYA_LAELAMP_VERSION.value
-)
-
-tuyaDevices = {
-    "laelamp": tuyaLaeLamp,
-}
-
-
-
 class SENDER(IntEnum):
     GPIO = int(ENV.RFDEVICE_GPIO.value)
     REPEAT = 5
@@ -53,12 +40,24 @@ class SENDER(IntEnum):
     PULSELENGTH = 350
     CODELENGTH = 24
 
+rfdevice = None
+tuyaDevices = {}
 
-if RFDevice:
-    # noinspection PyCallingNonCallable
-    rfdevice = RFDevice(SENDER.GPIO)
-    rfdevice.enable_tx()
-    rfdevice.tx_repeat = SENDER.REPEAT
+if os.environ.get('BOTTLE_CHILD'):
+    if RFDevice:
+        # noinspection PyCallingNonCallable
+        rfdevice = RFDevice(SENDER.GPIO)
+        rfdevice.enable_tx()
+        rfdevice.tx_repeat = SENDER.REPEAT
+
+    tuyaDevices = {
+        "laelamp": tinytuya.BulbDevice(
+            ENV.TUYA_LAELAMP_DEVICE_ID.value,
+            ENV.TUYA_LAELAMP_IP.value,
+            ENV.TUYA_LAELAMP_LOCAL_KEY.value,
+            version=ENV.TUYA_LAELAMP_VERSION.value
+        )
+    }
 
 # CODES (off, on) it means [row][0] is off.
 
@@ -97,9 +96,11 @@ def parse_commands(raw_commands):
 
 
 def send_cmd(cmd):
-    if RFDevice:
+    if rfdevice:
         rfdevice.tx_code(cmd, tx_proto=SENDER.PROTOCOL, tx_pulselength=SENDER.PULSELENGTH,
                          tx_length=SENDER.CODELENGTH)
+    else:
+        print(f"Could not send rfdevice command {cmd}, rfdevice not initialized")
 
 
 def do_work(cmd):
@@ -238,4 +239,13 @@ def send_433(request, response):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5433, debug=True, reloader=True)
+    def sigint_handler(signum, frame):
+        if rfdevice:
+            rfdevice.cleanup()
+        raise KeyboardInterrupt
+
+    # CTRL-C signal
+    signal.signal(signal.SIGINT, sigint_handler)
+    signal.signal(signal.SIGTERM, sigint_handler)
+
+app.run(host='0.0.0.0', port=5433, debug=True, reloader=True)
