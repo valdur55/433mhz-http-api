@@ -1,5 +1,6 @@
 import os
 import signal
+import sys
 from enum import IntEnum, Enum
 from threading import Thread
 
@@ -242,10 +243,10 @@ if __name__ == '__main__':
     def sigint_handler(signum, frame):
         if rfdevice:
             rfdevice.cleanup()
-        raise KeyboardInterrupt
+        sys.exit(0)
 
     # CTRL-C signal
-    signal.signal(signal.SIGINT, sigint_handler)
-    signal.signal(signal.SIGTERM, sigint_handler)
+    if os.environ.get('BOTTLE_CHILD'):
+        signal.signal(signal.SIGINT, sigint_handler)
 
-app.run(host='0.0.0.0', port=5433, debug=True, reloader=True)
+    app.run(host='0.0.0.0', port=5433, debug=True, reloader=True)
