@@ -8,7 +8,12 @@ from collections import namedtuple
 
 from RPi import GPIO
 
-
+try:
+    import pigpio
+    pi = pigpio.pi()
+except Exception:
+    pigpio = False
+    pi = None
 
 MAX_CHANGES = 67
 
@@ -187,9 +192,9 @@ class RFDevice:
             return False
         if not self.rx_enabled:
             self.rx_enabled = True
-            GPIO.setup(self.gpio, GPIO.IN)
-            GPIO.add_event_detect(self.gpio, GPIO.BOTH)
-            GPIO.add_event_callback(self.gpio, self.rx_callback)
+            if pi and pigpio:
+                pi.set_mode(self.gpio, pigpio.INPUT)
+                pi.callback(self.gpio, pigpio.EITHER_EDGE, self.rx_callback)
             _LOGGER.debug("RX enabled")
         return True
 
