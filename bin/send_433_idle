@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [ "$HOSTNAME" == "tark" ]; then
+    send_433 "$@"
+    exit 0
+fi
+
+echo "Send 433 idle is used only in 'tark' machine, you are in $HOSTNAME"
